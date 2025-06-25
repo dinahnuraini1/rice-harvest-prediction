@@ -471,8 +471,8 @@ def main():
 
                         params = model_data.get("params", {})
                         model_rf_pso = model_data.get("model")  # tetap string, cukup untuk ditampilkan
-                        mape_train = params.get("mape_train")
-                        mape_test = params.get("mape_test")
+                        mape_train = model_data.get("mape_train")
+                        mape_test = model_data.get("mape_test")
 
                         if model_rf_pso is not None and isinstance(params, dict) and isinstance(mape_train, (float, int)) and isinstance(mape_test, (float, int)):
                             st.subheader("📌 Parameter PSO")
