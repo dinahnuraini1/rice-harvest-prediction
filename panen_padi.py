@@ -14,10 +14,10 @@ import altair as alt
 
 
 # Fungsi untuk memuat objek dari file pickle
-def load_pickle(file_path):
-    with open(file_path, 'rb') as file:
-        obj = pickle.load(file)
-    return obj
+# def load_pickle(file_path):
+#     with open(file_path, 'rb') as file:
+#         obj = pickle.load(file)
+#     return obj
 
 
 # STREAMLIT
@@ -77,7 +77,7 @@ def main():
         st.header("1. Load Data")
         uploaded_file = st.file_uploader("Upload file CSV", type=['csv'])
         
-        if uploaded_file is not None:
+        if uploaded_file is not None:gdwo
             # Baca data
             data = pd.read_csv(uploaded_file)
             
@@ -316,6 +316,8 @@ def main():
                     with st.spinner("🔽 Mengunduh model dari Google Drive..."):
                         try:
                             url = f"https://drive.google.com/uc?id={drive_id}"
+                            st.write("🔍 DEBUG: gdown =", gdown)         # Tambahkan ini
+                            st.write("🔍 DEBUG TYPE:", type(gdown))       # Tambahkan ini
                             gdown.download(url, model_path, quiet=False, fuzzy=True)
                         except Exception as e:
                             st.error(f"Gagal mengunduh model: {e}")
@@ -458,7 +460,6 @@ def main():
                 if not os.path.exists(model_path_pso) or os.path.getsize(model_path_pso) == 0:
                     with st.spinner("🔽 Mengunduh model hasil PSO dari Google Drive..."):
                         try:
-                            import gdown
                             url = f"https://drive.google.com/uc?id={file_ref}"
                             gdown.download(url, model_path_pso, quiet=False, fuzzy=True)
                         except Exception as e:
