@@ -316,8 +316,6 @@ def main():
                     with st.spinner("🔽 Mengunduh model dari Google Drive..."):
                         try:
                             url = f"https://drive.google.com/uc?id={drive_id}"
-                            st.write("🔍 DEBUG: gdown =", gdown)         # Tambahkan ini
-                            st.write("🔍 DEBUG TYPE:", type(gdown))       # Tambahkan ini
                             gdown.download(url, model_path, quiet=False, fuzzy=True)
                         except Exception as e:
                             st.error(f"Gagal mengunduh model: {e}")
@@ -331,8 +329,8 @@ def main():
 
                         model_rf = model_data.get("model")
                         params = model_data.get("params", {})
-                        mape_train = params.get("mape_train")
-                        mape_test = params.get("mape_test")
+                        mape_train = model_data.get("mape_train")
+                        mape_test = model_data.get("mape_test")
 
                         if model_rf and mape_train is not None and mape_test is not None:
                             # Tampilkan parameter model dalam input field yang tidak bisa diubah (read-only)
