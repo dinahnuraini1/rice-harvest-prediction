@@ -1,3 +1,4 @@
+import gdown
 import streamlit as st # type: ignore
 import pandas as pd
 import numpy as np
@@ -10,7 +11,7 @@ import time
 import joblib
 import os
 import altair as alt
-import gdown
+
 
 # Fungsi untuk memuat objek dari file pickle
 # def load_pickle(file_path):
