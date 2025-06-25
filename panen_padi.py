@@ -326,6 +326,8 @@ def main():
                     try:
                         with open(model_path, "rb") as f:
                             model_data = pickle.load(f)
+                        st.write("🧪 DEBUG: isi model_data =", model_data)
+
 
                         model_rf = model_data.get("model")
                         params = model_data.get("params", {})
