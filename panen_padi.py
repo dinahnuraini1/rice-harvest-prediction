@@ -14,10 +14,10 @@ import altair as alt
 
 
 # Fungsi untuk memuat objek dari file pickle
-# def load_pickle(file_path):
-#     with open(file_path, 'rb') as file:
-#         obj = pickle.load(file)
-#     return obj
+def load_pickle(file_path):
+    with open(file_path, 'rb') as file:
+        obj = pickle.load(file)
+    return obj
 
 
 # STREAMLIT
