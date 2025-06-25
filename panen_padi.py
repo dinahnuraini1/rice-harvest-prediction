@@ -77,7 +77,7 @@ def main():
         st.header("1. Load Data")
         uploaded_file = st.file_uploader("Upload file CSV", type=['csv'])
         
-        if uploaded_file is not None:gdwo
+        if uploaded_file is not None:
             # Baca data
             data = pd.read_csv(uploaded_file)
             
