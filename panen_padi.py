@@ -679,13 +679,13 @@ def main():
             drive_id = "1LZqDyupjcoY_RO3BFFE7McREHv2A2P01"
             os.makedirs("model", exist_ok=True)
             if not os.path.exists(model_path) or os.path.getsize(model_path) == 0:
-            try:
-                url = f"https://drive.google.com/uc?id={drive_id}"
-                with st.spinner("🔽 Mengunduh model terbaik dari Google Drive..."):
-                    gdown.download(url, model_path, quiet=False, fuzzy=True)
-                st.success("✅ Model berhasil diunduh.")
-            except Exception as e:
-                st.error(f"Gagal mengunduh model: {e}")
+                try:
+                    url = f"https://drive.google.com/uc?id={drive_id}"
+                    with st.spinner("🔽 Mengunduh model terbaik dari Google Drive..."):
+                        gdown.download(url, model_path, quiet=False, fuzzy=True)
+                    st.success("✅ Model berhasil diunduh.")
+                except Exception as e:
+                    st.error(f"Gagal mengunduh model: {e}")
                 
             if os.path.exists(model_path):
                 try: 
