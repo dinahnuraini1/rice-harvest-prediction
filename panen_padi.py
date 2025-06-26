@@ -667,7 +667,23 @@ def main():
     
         # === 2. Load Model dan Scaler ===
         if "model_rf_pso_best" not in st.session_state:
-            model_path = "model/rfpso_1mean2.pkl
+            drive_id = "1LZqDyupjcoY_RO3BFFE7McREHv2A2P0"
+            model_dir = "model"
+            os.makedirs(model_dir, exist_ok=True)
+        
+            model_path = os.path.join(model_dir, "rfpso_best.pkl")
+        
+            # Unduh dari Google Drive jika file belum ada atau kosong
+            if not os.path.exists(model_path) or os.path.getsize(model_path) == 0:
+                try:
+                    import gdown
+                    url = f"https://drive.google.com/uc?id={drive_id}"
+                    with st.spinner("🔽 Mengunduh model dari Google Drive..."):
+                        gdown.download(url, model_path, quiet=False, fuzzy=True)
+                except Exception as e:
+                    st.error(f"❌ Gagal mengunduh model: {e}")
+        
+            # Load model dari file yang sudah diunduh
             if os.path.exists(model_path):
                 try:
                     with open(model_path, "rb") as f:
@@ -681,6 +697,7 @@ def main():
             else:
                 st.warning("📂 File model belum ditemukan.")
                 st.session_state["model_rf_pso_best"] = None
+
     
         # === 3. Input Fitur ===
         st.subheader("Masukkan Nilai Fitur:")
@@ -754,6 +771,7 @@ def main():
     
             except Exception as e:
                 st.error(f"❌ Terjadi kesalahan saat prediksi: {e}")
+
 
 
 
