@@ -693,14 +693,21 @@ def main():
                     with open(model_path, "rb") as f:
                         model_data = pickle.load(f)
                     st.write("📦 Debug: Isi model_data:")
-                    st.session_state["model_rf_pso_best"] = model_data.get("model")
-                    st.session_state["scaler_X"] = model_data.get("scaler_X")
-                    st.session_state["scaler_y"] = model_data.get("scaler_y")
+                    model = model_data.get("model", None)
+                    scaler_X = model_data.get("scaler_X", None)
+                    scaler_y = model_data.get("scaler_y", None)
+        
+                   if model is not None:
+                        st.session_state["model_rf_pso_best"] = model
+                        st.session_state["scaler_X"] = scaler_X
+                        st.session_state["scaler_y"] = scaler_y
+                        st.success("✅ Model berhasil dimuat!")
+                    else:
+                        st.error("❌ Model tidak ditemukan di dalam file pickle.")
+                        st.session_state["model_rf_pso_best"] = None
                 except Exception as e:
                     st.error(f"❌ Gagal memuat model: {e}")
-                    st.session_state["model_rf_pso_best"] = None
-            else:
-                st.session_state["model_rf_pso_best"] = None
+                    st.session_state["model_rf_pso_best"] = Nonee
 
         # === 3. Input Fitur ===
         st.subheader("Masukkan Nilai Fitur:")
