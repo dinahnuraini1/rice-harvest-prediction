@@ -667,34 +667,25 @@ def main():
     
         # === 2. Load model dari Google Drive jika belum ada ===
         if "model_rf_pso_best" not in st.session_state:
-            import gdown
-            model_path = "model/rfpso_1mean2.pkl"
             drive_id = "1LZqDyupjcoY_RO3BFFE7McREHv2A2P01"
-            os.makedirs("model", exist_ok=True)
-    
-            if not os.path.exists(model_path) or os.path.getsize(model_path) == 0:
-                try:
-                    url = f"https://drive.google.com/uc?id={drive_id}"
-                    with st.spinner("🔽 Mengunduh model terbaik dari Google Drive..."):
-                        gdown.download(url, model_path, quiet=False, fuzzy=True)
-                    st.success("✅ Model berhasil diunduh.")
-                except Exception as e:
-                    st.error(f"❌ Gagal mengunduh model: {e}")
-    
-            if os.path.exists(model_path):
-                try:
-                    with open(model_path, "rb") as f:
-                        model_data = pickle.load(f)
-                    model = model_data.get("model", None)
-                    if model is not None:
-                        st.session_state["model_rf_pso_best"] = model
-                        st.success("✅ Model berhasil dimuat!")
-                    else:
-                        st.session_state["model_rf_pso_best"] = None
-                        st.error("❌ Model tidak ditemukan di dalam file.")
-                except Exception as e:
-                    st.session_state["model_rf_pso_best"] = None
-                    st.error(f"❌ Gagal memuat model: {e}")
+            url = f"https://drive.google.com/uc?id={drive_id}"
+            try:
+                with st.spinner("🔽 Mengunduh model dari Google Drive..."):
+                    with tempfile.NamedTemporaryFile(suffix=".pkl") as tmp:
+                        gdown.download(url, tmp.name, quiet=False, fuzzy=True)
+                        tmp.seek(0)
+                        model_data = pickle.load(tmp)
+        
+                # Ambil model & scaler
+                st.session_state["model_rf_pso_best"] = model_data.get("model")
+                st.session_state["scaler_X"] = model_data.get("scaler_X", None)
+                st.session_state["scaler_y"] = model_data.get("scaler_y", None)
+        
+                st.success("✅ Model berhasil dimuat dari Google Drive!")
+        
+            except Exception as e:
+                st.error(f"❌ Gagal memuat model: {e}")
+                st.session_state["model_rf_pso_best"] = None
     
         # === 3. Input Fitur ===
         st.subheader("Masukkan Nilai Fitur:")
