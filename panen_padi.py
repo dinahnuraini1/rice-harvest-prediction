@@ -650,7 +650,7 @@ def main():
     elif menu == "Predictions":
         st.header("5. Prediksi Hasil Panen Padi")
     
-        # === 1. One-Hot Encoder untuk Varietas (default) ===
+        # === 1. One-Hot Encoder untuk Varietas ===
         def create_default_varietas_encoder():
             list_varietas = ["Serang Bentis", "Ciherang", "Toyo Arum", "Inpari 32", "Inpari 13"]
             encoder = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
@@ -665,31 +665,32 @@ def main():
     
         encoder = st.session_state["one_hot_encoders"]["varietas"]
     
-        # === 2. Load model dari Google Drive jika belum ada ===
+        # === 2. Load model dari Google Drive ===
         if "model_rf_pso_best" not in st.session_state:
             drive_id = "1LZqDyupjcoY_RO3BFFE7McREHv2A2P01"
             url = f"https://drive.google.com/uc?id={drive_id}"
+    
             try:
                 with st.spinner("🔽 Mengunduh model dari Google Drive..."):
                     with tempfile.NamedTemporaryFile(suffix=".pkl") as tmp:
-                        gdown.download(url, tmp.name, quiet=False, fuzzy=True)
+                        gdown.download(url, tmp.name, quiet=True, fuzzy=True)
                         tmp.seek(0)
                         model_data = pickle.load(tmp)
-        
-                # Ambil model & scaler
-                st.session_state["model_rf_pso_best"] = model_data.get("model")
-                st.session_state["scaler_X"] = model_data.get("scaler_X", None)
-                st.session_state["scaler_y"] = model_data.get("scaler_y", None)
-        
-                st.success("✅ Model berhasil dimuat dari Google Drive!")
-        
+                        st.write("📦 DEBUG: Isi model_data:", model_data)
+    
+                        model = model_data.get("model", None)
+                        if model is not None:
+                            st.session_state["model_rf_pso_best"] = model
+                            st.success("✅ Model berhasil dimuat!")
+                        else:
+                            st.session_state["model_rf_pso_best"] = None
+                            st.error("❌ Model tidak ditemukan dalam file.")
             except Exception as e:
-                st.error(f"❌ Gagal memuat model: {e}")
                 st.session_state["model_rf_pso_best"] = None
+                st.error(f"❌ Gagal memuat model: {e}")
     
         # === 3. Input Fitur ===
         st.subheader("Masukkan Nilai Fitur:")
-    
         luas_tanam = st.number_input("Luas Tanam (HA)", min_value=0.0)
         urea = st.number_input("Pupuk Urea (KG)", min_value=0.0)
         npk = st.number_input("Pupuk NPK (KG)", min_value=0.0)
@@ -703,7 +704,7 @@ def main():
     
         if st.button("Prediksi Hasil Panen"):
             try:
-                # === 4. Siapkan input DataFrame ===
+                # === 4. Siapkan DataFrame input ===
                 input_dict = {
                     "luas_tanam": luas_tanam,
                     "urea": urea,
@@ -722,7 +723,7 @@ def main():
                 input_df.drop(columns=["varietas"], inplace=True)
                 input_df = pd.concat([input_df, encoded_df], axis=1)
     
-                # === 6. Urutkan & lengkapi kolom ===
+                # === 6. Pastikan semua fitur lengkap dan urut ===
                 final_features = [
                     "luas_tanam", "urea", "npk", "organik", "jumlah_bibit",
                     "varietas_Ciherang", "varietas_Inpari 13", "varietas_Inpari 32",
@@ -733,7 +734,7 @@ def main():
                         input_df[col] = 0
                 input_df = input_df[final_features]
     
-                # === 7. Ambil model dan prediksi ===
+                # === 7. Ambil model dan lakukan prediksi ===
                 model = st.session_state.get("model_rf_pso_best")
                 if model is None:
                     st.warning("⚠️ Model belum tersedia.")
@@ -745,6 +746,7 @@ def main():
     
             except Exception as e:
                 st.error(f"❌ Terjadi kesalahan saat prediksi: {e}")
+
     
 
 
