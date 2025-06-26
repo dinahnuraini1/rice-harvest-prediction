@@ -678,7 +678,7 @@ def main():
         if "model_rf_pso_best" not in st.session_state:
             model_path = "1LZqDyupjcoY_RO3BFFE7McREHv2A2P01.pkl"
             if os.path.exists(model_path):
-                with open(model_path_pso, "rb") as f:
+                with open(model_path, "rb") as f:
                     model_data = pickle.load(f)
                 st.session_state["model_rf_pso_best"] = model_data.get("model")
                 st.session_state["scaler_X"] = model_data.get("scaler_X")
