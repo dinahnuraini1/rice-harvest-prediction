@@ -697,7 +697,7 @@ def main():
 
         varietas_padi = st.selectbox(
             "Varietas Padi",
-            ["serang bentis", "ciherang", "toyoarum", "inpari 32", "inpari 13"]
+            ["Serang Bentis", "Ciherang", "Toyo Arum", "Inpari 32", "Inpari 13"]
         )
 
         if st.button("Prediksi Hasil Panen"):
@@ -724,8 +724,8 @@ def main():
                 # === 6. Pastikan semua fitur lengkap dan urut ===
                 final_features = [
                     "luas_tanam", "urea", "npk", "organik", "jumlah_bibit",
-                    "varietas_ciherang", "varietas_inpari 13", "varietas_inpari 32",
-                    "varietas_serang bentis", "varietas_toyoarum"
+                    "varietas_Ciherang", "varietas_Inpari 13", "varietas_Inpari 32",
+                    "varietas_Serang Bentis", "varietas_Toyo Arum"
                 ]
                 for col in final_features:
                     if col not in input_df.columns:
