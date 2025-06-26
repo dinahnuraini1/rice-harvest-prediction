@@ -667,7 +667,7 @@ def main():
     
         # === 2. Load Model dan Scaler ===
         if "model_rf_pso_best" not in st.session_state:
-            model_path = "1LZqDyupjcoY_RO3BFFE7McREHv2A2P01"
+            model_path = "model/rfpso_1mean2.pkl
             if os.path.exists(model_path):
                 try:
                     with open(model_path, "rb") as f:
