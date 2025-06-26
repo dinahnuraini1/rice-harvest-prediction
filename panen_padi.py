@@ -648,9 +648,9 @@ def main():
 
 
     elif menu == "Predictions":
-        st.header("5. Prediksi Hasil Panen Padi")
+        st.header("5. Prediksi Hasil Panen Padi (RF + PSO)")
     
-        # === 1. Encoder default untuk varietas ===
+        # === 1. One-Hot Encoder untuk Varietas (default)
         def create_default_varietas_encoder():
             list_varietas = ["Serang Bentis", "Ciherang", "Toyo Arum", "Inpari 32", "Inpari 13"]
             encoder = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
@@ -663,33 +663,32 @@ def main():
             st.session_state["one_hot_encoders"]["varietas"] = create_default_varietas_encoder()
         encoder = st.session_state["one_hot_encoders"]["varietas"]
     
-        # === 2. Load model dari Google Drive (sekali saja) ===
+        # === 2. Load model dari Google Drive jika belum ada
         if "model_rf_pso_best" not in st.session_state:
             drive_id = "1LZqDyupjcoY_RO3BFFE7McREHv2A2P01"
             url = f"https://drive.google.com/uc?id={drive_id}"
             try:
-                with st.spinner("🔽 Mengunduh model dari Google Drive..."):
+                with st.spinner("🔽 Mengunduh model terbaik dari Google Drive..."):
                     with tempfile.NamedTemporaryFile(suffix=".pkl") as tmp:
                         gdown.download(url, tmp.name, quiet=False, fuzzy=True)
                         tmp.seek(0)
                         model_data = pickle.load(tmp)
     
-                # Cek isi pickle
                 if isinstance(model_data, dict) and "model" in model_data:
                     st.session_state["model_rf_pso_best"] = model_data["model"]
-                    st.session_state["mape_train"] = model_data.get("mape_train", None)
-                    st.session_state["mape_test"] = model_data.get("mape_test", None)
+                    st.session_state["mape_train"] = model_data.get("mape_train")
+                    st.session_state["mape_test"] = model_data.get("mape_test")
                     st.success("✅ Model berhasil dimuat dari Google Drive!")
-                    st.write("📦 Info Model: ", model_data["model"])
-                    st.write(f"📉 MAPE Train: {model_data['mape_train']:.2f}%, Test: {model_data['mape_test']:.2f}%")
+                    st.write("📉 MAPE Train:", model_data["mape_train"])
+                    st.write("📉 MAPE Test:", model_data["mape_test"])
                 else:
-                    st.error("❌ File tidak mengandung model yang valid.")
                     st.session_state["model_rf_pso_best"] = None
+                    st.error("❌ Model tidak valid dalam file pickle.")
             except Exception as e:
                 st.session_state["model_rf_pso_best"] = None
                 st.error(f"❌ Gagal memuat model: {e}")
     
-        # === 3. Input fitur ===
+        # === 3. Input fitur dari pengguna
         st.subheader("Masukkan Nilai Fitur:")
     
         luas_tanam = st.number_input("Luas Tanam (HA)", min_value=0.0)
@@ -705,7 +704,7 @@ def main():
     
         if st.button("Prediksi Hasil Panen"):
             try:
-                # === 4. Buat dataframe input ===
+                # === 4. Persiapkan DataFrame input
                 input_dict = {
                     "luas_tanam": luas_tanam,
                     "urea": urea,
@@ -716,16 +715,15 @@ def main():
                 }
                 input_df = pd.DataFrame([input_dict])
     
-                # === 5. One-hot encoding ===
+                # === 5. One-hot encoding untuk varietas
                 encoded = encoder.transform(input_df[["varietas"]])
                 encoded_df = pd.DataFrame(
-                    encoded,
-                    columns=encoder.get_feature_names_out(["varietas"])
+                    encoded, columns=encoder.get_feature_names_out(["varietas"])
                 )
-                input_df = input_df.drop(columns=["varietas"])
+                input_df.drop(columns=["varietas"], inplace=True)
                 input_df = pd.concat([input_df, encoded_df], axis=1)
     
-                # === 6. Lengkapi fitur & urut ===
+                # === 6. Pastikan semua fitur tersedia
                 final_features = [
                     "luas_tanam", "urea", "npk", "organik", "jumlah_bibit",
                     "varietas_Ciherang", "varietas_Inpari 13", "varietas_Inpari 32",
@@ -736,15 +734,14 @@ def main():
                         input_df[col] = 0
                 input_df = input_df[final_features]
     
-                # === 7. Prediksi hasil panen ===
+                # === 7. Prediksi
                 model = st.session_state.get("model_rf_pso_best")
                 if model is None:
                     st.warning("⚠️ Model belum tersedia.")
                     st.stop()
     
                 hasil = model.predict(input_df.values).reshape(-1, 1)
-    
-                st.success(f"🌾 Prediksi Hasil Panen Padi Adalah: **{hasil[0][0]:,.2f}** Ton")
+                st.success(f"🌾 Prediksi Hasil Panen: **{hasil[0][0]:,.2f}** Ton")
     
             except Exception as e:
                 st.error(f"❌ Terjadi kesalahan saat prediksi: {e}")
