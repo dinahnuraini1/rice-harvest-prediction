@@ -664,9 +664,9 @@ def main():
     
         encoder = st.session_state["one_hot_encoders"]["varietas"]
     
-        # 2. Load model dari Google Drive (sekali saja)
+        # 2. Load model dari Google Drive (hanya sekali)
         if "model_rf_pso_best" not in st.session_state:
-            drive_id = "https://drive.google.com/uc?id=1LZqDyupjcoY_RO3BFFE7McREHv2A2P01"
+            drive_id = "1LZqDyupjcoY_RO3BFFE7McREHv2A2P01"  # pastikan ini ID yang benar
             url = f"https://drive.google.com/uc?id={drive_id}"
     
             try:
@@ -676,9 +676,8 @@ def main():
                         tmp.seek(0)
                         model_data = pickle.load(tmp)
     
+                # Simpan model ke session_state
                 st.session_state["model_rf_pso_best"] = model_data.get("model")
-                st.session_state["scaler_X"] = model_data.get("scaler_X", None)
-                st.session_state["scaler_y"] = model_data.get("scaler_y", None)
                 st.success("✅ Model berhasil dimuat dari Google Drive!")
     
             except Exception as e:
@@ -700,7 +699,7 @@ def main():
     
         if st.button("Prediksi Hasil Panen"):
             try:
-                # 4. Dataframe input
+                # 4. Buat dataframe input
                 input_dict = {
                     "luas_tanam": luas_tanam,
                     "urea": urea,
@@ -711,7 +710,7 @@ def main():
                 }
                 input_df = pd.DataFrame([input_dict])
     
-                # 5. One-hot encoding
+                # 5. One-hot encoding varietas
                 encoded = encoder.transform(input_df[["varietas"]])
                 encoded_df = pd.DataFrame(
                     encoded, columns=encoder.get_feature_names_out(["varietas"])
@@ -737,11 +736,6 @@ def main():
                     st.stop()
     
                 hasil = model.predict(input_df.values).reshape(-1, 1)
-    
-                # 8. Jika ada scaler_y, inverse
-                scaler_y = st.session_state.get("scaler_y")
-                if scaler_y is not None:
-                    hasil = scaler_y.inverse_transform(hasil)
     
                 st.success(f"🌾 Prediksi Hasil Panen Padi Adalah: **{hasil[0][0]:,.2f}** Ton")
     
