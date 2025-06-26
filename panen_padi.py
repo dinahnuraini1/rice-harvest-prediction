@@ -676,7 +676,7 @@ def main():
 
         # === 2. Load Model dan Scaler ===
         if "model_rf_pso_best" not in st.session_state:
-            model_path = "model/rfpso_1mean2.pkl"
+            model_path = "1LZqDyupjcoY_RO3BFFE7McREHv2A2P01.pkl"
             if os.path.exists(model_path):
                 with open(model_path_pso, "rb") as f:
                     model_data = pickle.load(f)
