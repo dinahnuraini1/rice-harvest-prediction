@@ -661,7 +661,7 @@ def main():
 
         # === 1. One-Hot Encoder untuk Varietas (default jika tidak dari training) ===
         def create_default_varietas_encoder():
-            list_varietas = ["Serang Bentis", "Ciherang", "Toyoarum", "Inpari 32", "Inpari 13"]
+            list_varietas = ["Serang Bentis", "Ciherang", "Toyo Arum", "Inpari 32", "Inpari 13"]
             encoder = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
             encoder.fit(pd.DataFrame(list_varietas, columns=["varietas"]))
             return encoder
@@ -697,7 +697,7 @@ def main():
 
         varietas_padi = st.selectbox(
             "Varietas Padi",
-            ["Serang Bentis", "Ciherang", "Toyoarum", "Inpari 32", "Inpari 13"]
+            ["Serang Bentis", "Ciherang", "Toyo Arum", "Inpari 32", "Inpari 13"]
         )
 
         if st.button("Prediksi Hasil Panen"):
@@ -725,7 +725,7 @@ def main():
                 final_features = [
                     "luas_tanam", "urea", "npk", "organik", "jumlah_bibit",
                     "varietas_Ciherang", "varietas_Inpari 13", "varietas_Inpari 32",
-                    "varietas_Serang Bentis", "varietas_Toyoarum"
+                    "varietas_Serang Bentis", "varietas_Toyo Arum"
                 ]
                 for col in final_features:
                     if col not in input_df.columns:
