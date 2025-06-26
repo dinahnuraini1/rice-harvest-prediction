@@ -667,7 +667,7 @@ def main():
     
         # === 2. Load Model dan Scaler ===
         if "model_rf_pso_best" not in st.session_state:
-            drive_id = "1LZqDyupjcoY_RO3BFFE7McREHv2A2P0"
+            drive_id = "1LZqDyupjcoY_RO3BFFE7McREHv2A2P01"
             model_dir = "model"
             os.makedirs(model_dir, exist_ok=True)
         
