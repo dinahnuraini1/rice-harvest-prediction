@@ -666,7 +666,7 @@ def main():
     
         # 2. Load model dari Google Drive (sekali saja)
         if "model_rf_pso_best" not in st.session_state:
-            drive_id = "1LZqDyupjcoY_RO3BFFE7McREHv2A2P01"
+            drive_id = "https://drive.google.com/uc?id=1LZqDyupjcoY_RO3BFFE7McREHv2A2P01"
             url = f"https://drive.google.com/uc?id={drive_id}"
     
             try:
