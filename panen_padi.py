@@ -649,76 +649,60 @@ def main():
 
     elif menu == "Predictions":
         st.header("5. Prediksi Hasil Panen Padi")
-    
-        # === 1. One-Hot Encoder default untuk Varietas ===
+        # st.markdown("""
+        #     <div style='text-align: center;'>
+        #         <h4 style='color: #555;'>
+        #             <span style='color: #1E88E5;'> Menggunakan Model Terbaik dari Random Forest Regression</span> + 
+        #             <span style='color: #F9A825;'>Particle Swarm Optimization dengan Rasio Data Testing 0.1</span>
+        #         </h4>
+        #     </div> 
+        # """, unsafe_allow_html=True)
+
+
+        # === 1. One-Hot Encoder untuk Varietas (default jika tidak dari training) ===
         def create_default_varietas_encoder():
-            list_varietas = ["Serang Bentis", "Ciherang", "Toyo Arum", "Inpari 32", "Inpari 13"]
+            list_varietas = ["serang bentis", "ciherang", "toyoarum", "inpari 32", "inpari 13"]
             encoder = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
             encoder.fit(pd.DataFrame(list_varietas, columns=["varietas"]))
             return encoder
-    
+
         if "one_hot_encoders" not in st.session_state:
             st.session_state["one_hot_encoders"] = {}
-    
+
         if "varietas" not in st.session_state["one_hot_encoders"]:
             st.session_state["one_hot_encoders"]["varietas"] = create_default_varietas_encoder()
-    
+
         encoder = st.session_state["one_hot_encoders"]["varietas"]
-    
+
         # === 2. Load Model dan Scaler ===
         if "model_rf_pso_best" not in st.session_state:
-            drive_id = "1LZqDyupjcoY_RO3BFFE7McREHv2A2P01"     
-            model_dir = "model"
-            os.makedirs(model_dir, exist_ok=True)
-        
-            model_path = os.path.join(model_dir, "rfpso_best.pkl")
-        
-            # Unduh dari Google Drive jika file belum ada atau kosong
-            if not os.path.exists(model_path) or os.path.getsize(model_path) == 0:
-                try:
-                    import gdown
-                    url = f"https://drive.google.com/uc?id={drive_id}"
-                    with st.spinner("🔽 Mengunduh model dari Google Drive..."):
-                        gdown.download(url, model_path, quiet=False, fuzzy=True)
-                    st.success("✅ Model berhasil diunduh.")  # Tambahkan ini
-                except Exception as e:
-                    st.error(f"❌ Gagal mengunduh model: {e}")
-
-        
-            # Load model dari file yang sudah diunduh
+            model_path = "model/rfpso_1mean2.pkl"
             if os.path.exists(model_path):
-                try:
-                    with open(model_path, "rb") as f:
-                        model_data = pickle.load(f)
-                    st.write("🧪 DEBUG: isi model_data =", model_data) 
-                    st.session_state["model_rf_pso_best"] = model_data.get("model")
-                    st.session_state["scaler_X"] = model_data.get("scaler_X")
-                    st.session_state["scaler_y"] = model_data.get("scaler_y")
-                except Exception as e:
-                    st.error(f"❌ Gagal memuat model: {e}")
-                    st.session_state["model_rf_pso_best"] = None
+                with open(model_path_pso, "rb") as f:
+                    model_data = pickle.load(f)
+                st.session_state["model_rf_pso_best"] = model_data.get("model")
+                st.session_state["scaler_X"] = model_data.get("scaler_X")
+                st.session_state["scaler_y"] = model_data.get("scaler_y")
             else:
-                st.warning("📂 File model belum ditemukan.")
                 st.session_state["model_rf_pso_best"] = None
 
-    
         # === 3. Input Fitur ===
         st.subheader("Masukkan Nilai Fitur:")
-    
+
         luas_tanam = st.number_input("Luas Tanam (HA)", min_value=0.0)
         urea = st.number_input("Pupuk Urea (KG)", min_value=0.0)
         npk = st.number_input("Pupuk NPK (KG)", min_value=0.0)
         organik = st.number_input("Pupuk Organik (KG)", min_value=0.0)
         jumlah_bibit = st.number_input("Jumlah Bibit (KG)", min_value=0.0)
-    
+
         varietas_padi = st.selectbox(
             "Varietas Padi",
-            ["Serang Bentis", "Ciherang", "Toyo Arum", "Inpari 32", "Inpari 13"]
+            ["serang bentis", "ciherang", "toyoarum", "inpari 32", "inpari 13"]
         )
-    
+
         if st.button("Prediksi Hasil Panen"):
             try:
-                # === 4. Buat DataFrame Input ===
+                # === 4. Siapkan DataFrame input ===
                 input_dict = {
                     "luas_tanam": luas_tanam,
                     "urea": urea,
@@ -728,56 +712,53 @@ def main():
                     "varietas": varietas_padi
                 }
                 input_df = pd.DataFrame([input_dict])
-    
-                # === 5. One-hot encoding untuk Varietas ===
+
+                # === 5. One-hot encoding varietas ===
                 encoded = encoder.transform(input_df[["varietas"]])
                 encoded_df = pd.DataFrame(
                     encoded, columns=encoder.get_feature_names_out(["varietas"])
                 )
                 input_df.drop(columns=["varietas"], inplace=True)
                 input_df = pd.concat([input_df, encoded_df], axis=1)
-    
-                # === 6. Pastikan semua fitur lengkap & urut ===
+
+                # === 6. Pastikan semua fitur lengkap dan urut ===
                 final_features = [
                     "luas_tanam", "urea", "npk", "organik", "jumlah_bibit",
-                    "varietas_Ciherang", "varietas_Inpari 13", "varietas_Inpari 32",
-                    "varietas_Serang Bentis", "varietas_Toyo Arum"
+                    "varietas_ciherang", "varietas_inpari 13", "varietas_inpari 32",
+                    "varietas_serang bentis", "varietas_toyoarum"
                 ]
                 for col in final_features:
                     if col not in input_df.columns:
                         input_df[col] = 0
                 input_df = input_df[final_features]
-    
-                # === 7. Normalisasi input ===
+
+                # === 7. Normalisasi ===
                 scaler_X = st.session_state.get("scaler_X")
                 if scaler_X is not None:
                     input_scaled = scaler_X.transform(input_df)
                 else:
                     input_scaled = input_df.values
-    
+
                 # === 8. Prediksi ===
                 model = st.session_state.get("model_rf_pso_best")
                 if model is None:
-                    st.warning("⚠️ Model belum tersedia.")
+                    st.warning("Model belum tersedia.")
                     st.stop()
-    
+
                 hasil_normalized = model.predict(input_scaled).reshape(-1, 1)
-    
-                # === 9. Denormalisasi hasil ===
+
+                # === 9. Inverse transform hasil prediksi ===
                 scaler_y = st.session_state.get("scaler_y")
                 if scaler_y is not None:
                     hasil_panen = scaler_y.inverse_transform(hasil_normalized)
                 else:
                     hasil_panen = hasil_normalized
-    
+
                 st.success(f"🌾 Prediksi Hasil Panen Padi Adalah: **{hasil_panen[0][0]:,.2f}** Ton")
-    
+
             except Exception as e:
                 st.error(f"❌ Terjadi kesalahan saat prediksi: {e}")
 
 
-
-
 if __name__ == "__main__":
     main()
-
