@@ -666,7 +666,7 @@ def main():
     
         # 2. Load Model dari Google Drive
         if "model_rf_pso_best" not in st.session_state:
-            drive_id = "1LZqDyupjcoY_RO3BFFE7McREHv2A2P01"
+            drive_id = "10IN3RFjJZ2XGeiLzecF-i_9ZO3Upi_mP"
             try:
                 with st.spinner("🔽 Mengunduh model dari Google Drive..."):
                     with tempfile.NamedTemporaryFile(suffix=".pkl", delete=False) as tmp:
