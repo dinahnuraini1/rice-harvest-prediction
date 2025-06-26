@@ -650,7 +650,7 @@ def main():
     elif menu == "Predictions":
         st.header("5. Prediksi Hasil Panen Padi")
     
-        # === 1. One-Hot Encoder untuk Varietas (default) ===
+        # === 1. Encoder default untuk varietas ===
         def create_default_varietas_encoder():
             list_varietas = ["Serang Bentis", "Ciherang", "Toyo Arum", "Inpari 32", "Inpari 13"]
             encoder = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
@@ -659,13 +659,11 @@ def main():
     
         if "one_hot_encoders" not in st.session_state:
             st.session_state["one_hot_encoders"] = {}
-    
         if "varietas" not in st.session_state["one_hot_encoders"]:
             st.session_state["one_hot_encoders"]["varietas"] = create_default_varietas_encoder()
-    
         encoder = st.session_state["one_hot_encoders"]["varietas"]
     
-        # === 2. Load model dari Google Drive jika belum ada ===
+        # === 2. Load model dari Google Drive (sekali saja) ===
         if "model_rf_pso_best" not in st.session_state:
             drive_id = "1LZqDyupjcoY_RO3BFFE7McREHv2A2P01"
             url = f"https://drive.google.com/uc?id={drive_id}"
@@ -676,19 +674,22 @@ def main():
                         tmp.seek(0)
                         model_data = pickle.load(tmp)
     
-                # Ambil model dari file
-                model = model_data.get("model", None)
-                if model is not None:
-                    st.session_state["model_rf_pso_best"] = model
+                # Cek isi pickle
+                if isinstance(model_data, dict) and "model" in model_data:
+                    st.session_state["model_rf_pso_best"] = model_data["model"]
+                    st.session_state["mape_train"] = model_data.get("mape_train", None)
+                    st.session_state["mape_test"] = model_data.get("mape_test", None)
                     st.success("✅ Model berhasil dimuat dari Google Drive!")
+                    st.write("📦 Info Model: ", model_data["model"])
+                    st.write(f"📉 MAPE Train: {model_data['mape_train']:.2f}%, Test: {model_data['mape_test']:.2f}%")
                 else:
+                    st.error("❌ File tidak mengandung model yang valid.")
                     st.session_state["model_rf_pso_best"] = None
-                    st.error("❌ Model tidak ditemukan dalam file.")
             except Exception as e:
                 st.session_state["model_rf_pso_best"] = None
                 st.error(f"❌ Gagal memuat model: {e}")
     
-        # === 3. Input Fitur ===
+        # === 3. Input fitur ===
         st.subheader("Masukkan Nilai Fitur:")
     
         luas_tanam = st.number_input("Luas Tanam (HA)", min_value=0.0)
@@ -704,7 +705,7 @@ def main():
     
         if st.button("Prediksi Hasil Panen"):
             try:
-                # === 4. Siapkan input DataFrame ===
+                # === 4. Buat dataframe input ===
                 input_dict = {
                     "luas_tanam": luas_tanam,
                     "urea": urea,
@@ -715,15 +716,16 @@ def main():
                 }
                 input_df = pd.DataFrame([input_dict])
     
-                # === 5. One-hot encoding varietas ===
+                # === 5. One-hot encoding ===
                 encoded = encoder.transform(input_df[["varietas"]])
                 encoded_df = pd.DataFrame(
-                    encoded, columns=encoder.get_feature_names_out(["varietas"])
+                    encoded,
+                    columns=encoder.get_feature_names_out(["varietas"])
                 )
-                input_df.drop(columns=["varietas"], inplace=True)
+                input_df = input_df.drop(columns=["varietas"])
                 input_df = pd.concat([input_df, encoded_df], axis=1)
     
-                # === 6. Urutkan & lengkapi kolom ===
+                # === 6. Lengkapi fitur & urut ===
                 final_features = [
                     "luas_tanam", "urea", "npk", "organik", "jumlah_bibit",
                     "varietas_Ciherang", "varietas_Inpari 13", "varietas_Inpari 32",
@@ -734,7 +736,7 @@ def main():
                         input_df[col] = 0
                 input_df = input_df[final_features]
     
-                # === 7. Prediksi ===
+                # === 7. Prediksi hasil panen ===
                 model = st.session_state.get("model_rf_pso_best")
                 if model is None:
                     st.warning("⚠️ Model belum tersedia.")
@@ -746,6 +748,7 @@ def main():
     
             except Exception as e:
                 st.error(f"❌ Terjadi kesalahan saat prediksi: {e}")
+
 
 
     
