@@ -11,7 +11,7 @@ import time
 import joblib
 import os
 import altair as alt
-
+import tempfile
 
 # Fungsi untuk memuat objek dari file pickle
 # def load_pickle(file_path):
