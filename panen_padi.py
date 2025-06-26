@@ -668,7 +668,7 @@ def main():
         # === 2. Load model dari Google Drive jika belum ada ===
         if "model_rf_pso_best" not in st.session_state:
             import gdown
-            model_path = "rfpso_1mean2.pkl"
+            model_path = "model/rfpso_1mean2.pkl"
             drive_id = "1LZqDyupjcoY_RO3BFFE7McREHv2A2P01"
             os.makedirs("model", exist_ok=True)
     
