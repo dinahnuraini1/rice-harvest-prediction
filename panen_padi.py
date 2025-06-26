@@ -696,8 +696,7 @@ def main():
                     model = model_data.get("model", None)
                     scaler_X = model_data.get("scaler_X", None)
                     scaler_y = model_data.get("scaler_y", None)
-        
-                   if model is not None:
+                    if model is not None:
                         st.session_state["model_rf_pso_best"] = model
                         st.session_state["scaler_X"] = scaler_X
                         st.session_state["scaler_y"] = scaler_y
