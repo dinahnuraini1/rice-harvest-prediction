@@ -650,7 +650,7 @@ def main():
     elif menu == "Predictions":
         st.header("5. Prediksi Hasil Panen Padi")
     
-        # 1. One-Hot Encoder Varietas
+        # 1. One-Hot Encoder untuk Varietas
         def create_default_varietas_encoder():
             list_varietas = ["serang bentis", "ciherang", "toyoarum", "inpari 32", "inpari 13"]
             encoder = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
@@ -664,29 +664,28 @@ def main():
     
         encoder = st.session_state["one_hot_encoders"]["varietas"]
     
-        # 2. Load model dari Google Drive (sekali saja)
+        # 2. Load Model dari Google Drive
         if "model_rf_pso_best" not in st.session_state:
-
             drive_id = "1LZqDyupjcoY_RO3BFFE7McREHv2A2P01"
-            url = f"https://drive.google.com/uc?id={drive_id}"
-    
             try:
                 with st.spinner("🔽 Mengunduh model dari Google Drive..."):
-                    with tempfile.NamedTemporaryFile(suffix=".pkl") as tmp:
-                        gdown.download(url, tmp.name, quiet=True, fuzzy=True)
-                        tmp.seek(0)
-                        model_data = pickle.load(tmp)
+                    with tempfile.NamedTemporaryFile(suffix=".pkl", delete=False) as tmp:
+                        url = f"https://drive.google.com/uc?id={drive_id}"
+                        gdown.download(url, tmp.name, quiet=False, fuzzy=True)
+                        with open(tmp.name, "rb") as f:
+                            model_data = pickle.load(f)
     
                 st.session_state["model_rf_pso_best"] = model_data.get("model")
                 st.session_state["scaler_X"] = model_data.get("scaler_X", None)
                 st.session_state["scaler_y"] = model_data.get("scaler_y", None)
+    
                 st.success("✅ Model berhasil dimuat dari Google Drive!")
     
             except Exception as e:
                 st.error(f"❌ Gagal memuat model: {e}")
                 st.session_state["model_rf_pso_best"] = None
     
-        # 3. Input fitur
+        # 3. Input Fitur
         st.subheader("Masukkan Nilai Fitur:")
         luas_tanam = st.number_input("Luas Tanam (HA)", min_value=0.0)
         urea = st.number_input("Pupuk Urea (KG)", min_value=0.0)
@@ -701,6 +700,7 @@ def main():
     
         if st.button("Prediksi Hasil Panen"):
             try:
+                # 4. Siapkan DataFrame input
                 input_dict = {
                     "luas_tanam": luas_tanam,
                     "urea": urea,
@@ -711,13 +711,15 @@ def main():
                 }
                 input_df = pd.DataFrame([input_dict])
     
-                # One-hot encoding varietas
+                # 5. One-hot encoding varietas
                 encoded = encoder.transform(input_df[["varietas"]])
-                encoded_df = pd.DataFrame(encoded, columns=encoder.get_feature_names_out(["varietas"]))
+                encoded_df = pd.DataFrame(
+                    encoded, columns=encoder.get_feature_names_out(["varietas"])
+                )
                 input_df.drop(columns=["varietas"], inplace=True)
                 input_df = pd.concat([input_df, encoded_df], axis=1)
     
-                # Lengkapi kolom
+                # 6. Lengkapi dan urutkan kolom
                 final_features = [
                     "luas_tanam", "urea", "npk", "organik", "jumlah_bibit",
                     "varietas_ciherang", "varietas_inpari 13", "varietas_inpari 32",
@@ -728,20 +730,25 @@ def main():
                         input_df[col] = 0
                 input_df = input_df[final_features]
     
-                # Prediksi
+                # 7. Normalisasi
+                scaler_X = st.session_state.get("scaler_X")
+                if scaler_X is not None:
+                    input_scaled = scaler_X.transform(input_df)
+                else:
+                    input_scaled = input_df.values
+    
+                # 8. Prediksi
                 model = st.session_state.get("model_rf_pso_best")
                 if model is None:
                     st.warning("⚠️ Model belum tersedia.")
                     st.stop()
     
-                X = input_df.values
-                if st.session_state["scaler_X"] is not None:
-                    X = st.session_state["scaler_X"].transform(X)
+                hasil = model.predict(input_scaled).reshape(-1, 1)
     
-                hasil = model.predict(X).reshape(-1, 1)
-    
-                if st.session_state["scaler_y"] is not None:
-                    hasil = st.session_state["scaler_y"].inverse_transform(hasil)
+                # 9. Inverse scaler_y jika ada
+                scaler_y = st.session_state.get("scaler_y")
+                if scaler_y is not None:
+                    hasil = scaler_y.inverse_transform(hasil)
     
                 st.success(f"🌾 Prediksi Hasil Panen Padi Adalah: **{hasil[0][0]:,.2f}** Ton")
     
