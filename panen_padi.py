@@ -680,8 +680,10 @@ def main():
                     url = f"https://drive.google.com/uc?id={drive_id}"
                     with st.spinner("🔽 Mengunduh model dari Google Drive..."):
                         gdown.download(url, model_path, quiet=False, fuzzy=True)
+                    st.success("✅ Model berhasil diunduh.")  # Tambahkan ini
                 except Exception as e:
                     st.error(f"❌ Gagal mengunduh model: {e}")
+
         
             # Load model dari file yang sudah diunduh
             if os.path.exists(model_path):
