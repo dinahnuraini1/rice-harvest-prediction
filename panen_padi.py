@@ -690,6 +690,7 @@ def main():
                 try:
                     with open(model_path, "rb") as f:
                         model_data = pickle.load(f)
+                    st.write("🧪 DEBUG: isi model_data =", model_data) 
                     st.session_state["model_rf_pso_best"] = model_data.get("model")
                     st.session_state["scaler_X"] = model_data.get("scaler_X")
                     st.session_state["scaler_y"] = model_data.get("scaler_y")
